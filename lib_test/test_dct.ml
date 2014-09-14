@@ -1,3 +1,5 @@
+(* test the chen dct/idct *)
+
 open Printf
 open Ovideo
 open Dct
@@ -17,8 +19,6 @@ let rnd x =
 let din = Frame.SInt.Plane.init ~w:8 ~h:8 (fun ~x ~y -> Random.int 512 - 256)
 let d = Frame.SInt.Plane.map (fun x -> x) din
 let d' = Frame.SInt.Plane.make ~w:8 ~h:8
-
-(* test the chen dct/idct *)
 
 let () = dump d
 let () = Chen.fdct d d'

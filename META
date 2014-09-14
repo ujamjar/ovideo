@@ -1,0 +1,6 @@
+version = "1.0.0"
+description = "Video CODEC utility library"
+requires = "bigarray"
+archive(byte) = "ovideo.cma"
+archive(native) = "ovideo.cmxa"
+
