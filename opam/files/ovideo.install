@@ -2,5 +2,6 @@ lib: [
   "_build/lib/ovideo.cmi"
   "_build/lib/ovideo.cma"
   "_build/lib/ovideo.cmxa"
+  "_build/lib/ovideo.a"
   "META"
 ]
