@@ -1,6 +1,6 @@
 <lib/*.ml>: for-pack(Ovideo), package(bigarray)
 
-<lib_test/test_bits.byte>: package(bigarray)
+<lib_test/*.byte>: package(bigarray)
 
 <lib>: include
 <lib_test>: include

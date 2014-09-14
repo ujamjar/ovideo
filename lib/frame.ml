@@ -19,10 +19,15 @@ module type Frame = sig
     val height : t -> int
 
     val make : w:int -> h:int -> t
+    val init : w:int -> h:int -> (x:int -> y:int -> ot) -> t
     val to_1d : t -> t1d
     val of_1d : t1d -> w:int -> h:int -> t
-    val iter : t -> (ot -> ot) -> unit
-    val iteri : t -> (x:int -> y:int -> ot -> ot) -> unit
+    val map : ?alloc:bool -> (ot -> ot) -> t -> t
+    val mapi : ?alloc:bool -> (x:int -> y:int -> ot -> ot) -> t -> t
+    val map2 : (ot -> ot -> ot) -> t -> t -> t
+    val map2i : (x:int -> y:int -> ot -> ot -> ot) -> t -> t -> t
+    val iter : (ot -> unit) -> t -> unit
+    val iteri : (x:int -> y:int -> ot -> unit) -> t -> unit
   end
 
   type chroma = C420 | C422
@@ -57,26 +62,67 @@ module Make(S : S) = struct
     let height = Array2.dim1
 
     let make ~w ~h = Array2.create S.k c_layout h w
-    
+ 
     let to_1d p = 
       reshape_1 (genarray_of_array2 p) ((height p)*(width p))
 
     let of_1d p ~w ~h = 
       reshape_2 (genarray_of_array1 p) h w
-    
-    let iter p f = 
+ 
+    let map ?(alloc=true) f p = 
+      let q = if alloc then make ~w:(width p) ~h:(height p) else p in
       for y=0 to height p - 1 do
         for x=0 to width p - 1 do
-          p.{y,x} <- f p.{y,x}
+          q.{y,x} <- f p.{y,x}
         done
-      done
-    
-    let iteri p f = 
+      done;
+      q
+
+    let mapi ?(alloc=true) f p = 
+      let q = if alloc then make ~w:(width p) ~h:(height p) else p in
       for y=0 to height p - 1 do
         for x=0 to width p - 1 do
           p.{y,x} <- f ~x ~y p.{y,x}
         done
+      done;
+      q
+
+    let map2 f p q = 
+      let r = make ~w:(width p) ~h:(height p) in
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          r.{y,x} <- f p.{y,x} q.{y,x}
+        done
+      done;
+      r
+
+    let map2i f p q = 
+      let r = make ~w:(width p) ~h:(height p) in
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          r.{y,x} <- f ~x ~y p.{y,x} q.{y,x}
+        done
+      done;
+      r
+
+    let iter f p = 
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          f p.{y,x}
+        done
       done
+    
+    let iteri f p = 
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          f ~x ~y p.{y,x}
+        done
+      done
+      
+    let init ~w ~h f = 
+      let p = make ~w ~h in
+      mapi ~alloc:false (fun ~x ~y _ -> f ~x ~y) p
+
   end
 
   type chroma = C420 | C422
@@ -117,4 +163,11 @@ module S16 = Make(struct
   type et = int16_signed_elt
   let k = int16_signed
 end)
+
+module SInt = Make(struct
+  type ot = int
+  type et = int_elt
+  let k = int
+end)
+
 

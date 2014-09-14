@@ -32,13 +32,31 @@ module type Frame = sig
 
     (** make a plane *)
     val make : w:int -> h:int -> t
-    (** convert to 1d array *)
+
+    val init : w:int -> h:int -> (x:int -> y:int -> ot) -> t
+
+    (** convert to/from 1d bigarray *)
     val to_1d : t -> t1d
     val of_1d : t1d -> w:int -> h:int -> t
+
+    (** map over elements *)
+    val map : ?alloc:bool -> (ot -> ot) -> t -> t
+
+    (** map over elements with index *)
+    val mapi : ?alloc:bool -> (x:int -> y:int -> ot -> ot) -> t -> t
+
+    (** map over elements *)
+    val map2 : (ot -> ot -> ot) -> t -> t -> t
+
+    (** map over elements with index *)
+    val map2i : (x:int -> y:int -> ot -> ot -> ot) -> t -> t -> t
+
     (** iter over elements *)
-    val iter : t -> (ot -> ot) -> unit
+    val iter : (ot -> unit) -> t -> unit
+
     (** iter over elements with index *)
-    val iteri : t -> (x:int -> y:int -> ot -> ot) -> unit
+    val iteri : (x:int -> y:int -> ot -> unit) -> t -> unit
+
   end
 
   (** type of chroma subsampling *)
@@ -70,4 +88,5 @@ module Make(S : S) : Frame
 
 module U8 : Frame with type Plane.ot = int
 module S16 : Frame with type Plane.ot = int
+module SInt : Frame with type Plane.ot = int
 
