@@ -5,7 +5,7 @@ type 'a code =
     data : 'a;
   }
 
-type 'a table = 'a option array
+type 'a table = (int * 'a) option array
 
 let lookup (codes : 'a code list) = 
   (* max code size *)
@@ -19,7 +19,7 @@ let lookup (codes : 'a code list) =
     let first = code.code lsl zero_bits in
     let count = 1 lsl zero_bits in
     for i = first to first + count - 1 do
-      table.(i) <- Some code.data
+      table.(i) <- Some (code.length, code.data)
     done
   ) codes;
   table, max_length

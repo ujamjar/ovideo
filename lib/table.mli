@@ -5,6 +5,6 @@ type 'a code =
     data : 'a;
   }
 
-type 'a table = 'a option array
+type 'a table = (int * 'a) option array
 
 val lookup : 'a code list -> 'a table * int
