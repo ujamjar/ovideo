@@ -22,3 +22,7 @@ let fwd =
     35; 36; 48; 49; 57; 58; 62; 63;
 |]
 
+let gen2d = Array.map (fun i -> (i mod 8),(i / 8)) 
+
+let inv2d = gen2d inv
+let fwd2d = gen2d fwd
