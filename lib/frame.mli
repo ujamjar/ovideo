@@ -57,6 +57,15 @@ module type Frame = sig
     (** iter over elements with index *)
     val iteri : (x:int -> y:int -> ot -> unit) -> t -> unit
 
+    (** clear *)
+    val clear : t -> ot -> unit
+
+    (** blit src sub rect to dst *)
+    val blit : x:int -> y:int -> w:int -> h:int -> dx:int -> dy:int -> t -> t -> unit
+
+    (* extract sub plane *)
+    val sub : x:int -> y:int -> w:int -> h:int -> t -> t
+
   end
 
   (** type of chroma subsampling *)

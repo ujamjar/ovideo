@@ -28,6 +28,9 @@ module type Frame = sig
     val map2i : (x:int -> y:int -> ot -> ot -> ot) -> t -> t -> t
     val iter : (ot -> unit) -> t -> unit
     val iteri : (x:int -> y:int -> ot -> unit) -> t -> unit
+    val clear : t -> ot -> unit
+    val blit : x:int -> y:int -> w:int -> h:int -> dx:int -> dy:int -> t -> t -> unit
+    val sub : x:int -> y:int -> w:int -> h:int -> t -> t
   end
 
   type chroma = C420 | C422
@@ -122,6 +125,20 @@ module Make(S : S) = struct
     let init ~w ~h f = 
       let p = make ~w ~h in
       mapi ~alloc:false (fun ~x ~y _ -> f ~x ~y) p
+
+    let clear p v = Array2.fill p v
+
+    let blit ~x ~y ~w ~h ~dx ~dy src dst =
+      for j=0 to h - 1 do
+        for i=0 to w - 1 do
+          dst.{j,i} <- src.{y+j,x+i}
+        done
+      done
+
+    let sub ~x ~y ~w ~h p = 
+      let p' = make ~w ~h in
+      blit ~x ~y ~w ~h ~dx:0 ~dy:0 p p';
+      p'
 
   end
 
