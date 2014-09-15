@@ -4,3 +4,5 @@
 
 <lib>: include
 <lib_test>: include
+
+true: debug
