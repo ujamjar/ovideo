@@ -23,6 +23,19 @@ module File_source = struct
   let next_byte c = try Some(input_byte c) with _ -> None
 end
 
+module type Reader = sig
+
+  type source
+  type t
+
+  val init : source -> t
+  val show : t -> int -> int
+  val advance : t -> int -> unit
+  val get : t -> int -> int
+  val pos : t -> int
+
+end
+
 module Reader( S : Source ) = struct
 
   type source = S.t
@@ -87,6 +100,17 @@ module File_sink = struct
   type t = out_channel
   let init fname = open_out_bin fname
   let put_byte t v = output_byte t v
+end
+
+module type Writer = sig
+
+  type sink
+  type t
+
+  val init : sink -> t
+  val put : t -> int -> int -> unit
+  val pos : t -> int
+
 end
 
 module Writer(S : Sink) = struct

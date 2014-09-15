@@ -15,7 +15,7 @@ module File_source : sig
   val init : string -> t
 end
 
-module Reader(S : Source) : sig
+module type Reader = sig
 
   type source
   type t
@@ -27,6 +27,8 @@ module Reader(S : Source) : sig
   val pos : t -> int
 
 end
+
+module Reader(S : Source) : Reader
   with type source = S.t
 
 module type Sink = sig
@@ -46,7 +48,7 @@ module File_sink : sig
   val init : string -> t
 end
 
-module Writer(S : Sink) : sig
+module type Writer = sig
 
   type sink
   type t
@@ -56,5 +58,9 @@ module Writer(S : Sink) : sig
   val pos : t -> int
 
 end
+
+module Writer(S : Sink) : Writer
   with type sink = S.t
+
+
 
