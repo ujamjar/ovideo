@@ -69,8 +69,13 @@ module type Estimator = sig
   val eval : init:init -> t search
 end
 
-module Three_step_search(M : Metric) : Estimator
+module Three_step_search(M : Metric) : Estimator 
+  with type init = int
+   and type t = M.t
+
 module Full_search(M : Metric) : Estimator
+  with type init = int*int
+   and type t = M.t
 
 (*module Make(M : Metric) : Search with type t = M.t*)
 
