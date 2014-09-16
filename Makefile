@@ -2,7 +2,7 @@ all:
 	ocamlbuild -use-ocamlfind ovideo.cma ovideo.cmxa
 
 test: all
-	ocamlbuild -use-ocamlfind test_bits.byte test_dct.byte
+	ocamlbuild -use-ocamlfind test_bits.byte test_dct.byte test_motion.byte
 
 clean:
 	ocamlbuild -clean

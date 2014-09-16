@@ -36,6 +36,8 @@ module Sad = struct
         sad := !sad + abs ( cur.{cy+j,cx+i} - ref.{my+j,mx+i} )
       done
     done;
+    (*Printf.printf "sad: c=[%i,%i] m=[%i,%i] metric=%-6i\n"
+      cx cy mx my !sad;*)
     !sad
 
   let metric_umv 
@@ -102,14 +104,14 @@ type 'a mv_bounds =
 
 let mv_in_bounds ~ref ~bw ~bh = 
   let max_mx, max_my = Frame.U8.Plane.(width ref - bw, height ref - bh) in
-  (fun ~mx ~my -> mx >= 0 && mx < max_mx && my >= 0 && my < max_my)
+  (fun ~mx ~my -> mx >= 0 && mx <= max_mx && my >= 0 && my <= max_my)
 
 let mv_in_bounds_umv ~ref ~bw ~bh = 
   let w, h = Frame.U8.Plane.(width ref, height ref) in
   (fun ~mx ~my -> mx > (-bw) && mx < w && my > (-bh) && my < h)
 
 let mv_clip_bounds ~ref ~bw ~bh = 
-  let w, h = Frame.U8.Plane.(width ref - 1 - bw, height ref - 1 - bh) in
+  let w, h = Frame.U8.Plane.(width ref - bw, height ref - bh) in
   (fun ~mx ~my -> max 0 (min w mx), max 0 (min h my))
 
 let mv_clip_bounds_umv ~ref ~bw ~bh = 
@@ -177,6 +179,7 @@ module Three_step_search(M : Metric) = struct
         let check ~mx ~my = 
             (* check mv is fully in bounds of the reference frame *)
             if mv_in_bounds ~mx ~my then begin
+              (*Printf.printf "[i] ";*)
               let metric = metric ~mx ~my in
               if M.compare metric !best_metric < 0 then begin
                 best_metric := metric;
@@ -186,6 +189,7 @@ module Three_step_search(M : Metric) = struct
             end
             (* if umv is enabled *)
             else if umv then begin
+              (*Printf.printf "[u] ";*)
               let mx, my = mv_clip_bounds_umv ~mx ~my in
               let metric = metric_umv ~mx ~my in
               if M.compare metric !best_metric < 0 then begin
@@ -195,6 +199,7 @@ module Three_step_search(M : Metric) = struct
             end
             (* clip bounds to within frame*)
             end else begin
+              (*Printf.printf "[c] ";*)
               let mx, my = mv_clip_bounds ~mx ~my in
               let metric = metric ~mx ~my in
               if M.compare metric !best_metric < 0 then begin
@@ -205,10 +210,10 @@ module Three_step_search(M : Metric) = struct
             end
         in
 
-        let step ~range ~sx ~sy = 
+        let step ~range ~mx ~my = 
           for i=0 to Array.length patterns - 1 do
             let ox, oy = patterns.(i) in
-            let mx, my = sx + (ox*range), sy + (oy*range) in
+            let mx, my = mx + (ox*range), my + (oy*range) in
             check ~mx ~my
           done
         in
@@ -220,7 +225,7 @@ module Three_step_search(M : Metric) = struct
         check ~mx:sx ~my:sy;
 
         let range = 1 lsl (steps-1) in
-        let rec loop ~range ~sx ~sy = 
+        let rec loop ~range ~mx ~my = 
           if range=0 then 
             {
               mx = !best_mx - sx;
@@ -228,11 +233,11 @@ module Three_step_search(M : Metric) = struct
               metric = !best_metric;
             }
           else begin
-            step ~range ~sx ~sy;
-            loop ~range:(range/2) ~sx:(!best_mx) ~sy:(!best_my)
+            step ~range ~mx ~my;
+            loop ~range:(range/2) ~mx:(!best_mx) ~my:(!best_my)
           end
         in
-        loop ~range ~sx ~sy 
+        loop ~range ~mx:sx ~my:sx 
       in
       search
     in
@@ -270,8 +275,10 @@ module Full_search(M : Metric) = struct
         best_metric := M.init;
         for my=(sy-wy) to (sy+wy) do
           for mx=(sx-wx) to (sx+wx) do
+            (*Printf.printf "[%i,%i] " mx my;*)
             (* check mv is fully in bounds of the reference frame *)
             if mv_in_bounds ~mx ~my then begin
+              (*Printf.printf "[i] ";*)
               let metric = metric ~mx ~my in
               if M.compare metric !best_metric < 0 then begin
                 best_metric := metric;
@@ -282,13 +289,15 @@ module Full_search(M : Metric) = struct
             (* if umv is enabled, check if the search block is at least
             * partially within the frame *)
             else if umv && mv_in_bounds_umv ~mx ~my then begin
+              (*Printf.printf "[u] ";*)
               let metric = metric_umv ~mx ~my in
               if M.compare metric !best_metric < 0 then begin
                 best_metric := metric;
                 best_mx := mx;
                 best_my := my;
               end
-            end
+            end (*else
+              Printf.printf "[n]\n";*)
           done
         done;
         {
