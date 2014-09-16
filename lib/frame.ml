@@ -131,7 +131,7 @@ module Make(S : S) = struct
     let blit ~x ~y ~w ~h ~dx ~dy src dst =
       for j=0 to h - 1 do
         for i=0 to w - 1 do
-          dst.{j,i} <- src.{y+j,x+i}
+          dst.{dy+j,dx+i} <- src.{y+j,x+i}
         done
       done
 
