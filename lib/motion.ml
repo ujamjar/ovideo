@@ -131,23 +131,31 @@ type 'a search =
 
 module type Search = sig
   type t 
-  val logsearch : steps:int -> t search
-  val fullsearch : window:(int*int) -> t search 
+  val threestep : steps:int -> t search
+  val full : window:(int*int) -> t search 
 end
 
-module Make(M : Metric) = struct
+module type Estimator = sig
+  type t 
+  type init
+  val eval : init:init -> t search
+end
+
+module Three_step_search(M : Metric) = struct
 
   type t = M.t
+  type init = int
 
-  let logsearch 
+  let eval
     (* search parameters *)
-    ~steps
+    ~init
     (* block size *)
     ~bw ~bh
     (* enable umv *)
     ~umv
     (* reference frames *)
     ~cur ~ref =
+    let steps = init in
     let best_mx, best_my, best_metric = Pervasives.(ref 0, ref 0, ref M.init) in
     let patterns = 
       [| (-1,-1); (0,-1); (1,-1);
@@ -229,16 +237,22 @@ module Make(M : Metric) = struct
     in
     search
 
-  let fullsearch 
+end
+
+module Full_search(M : Metric) = struct
+  type t = M.t
+  type init = int*int
+
+  let eval
     (* search parameters *)
-    ~window
+    ~init
     (* block size *)
     ~bw ~bh
     (* enable umv *)
     ~umv
     (* reference frames *)
     ~cur ~ref =
-    let wx,wy = window in
+    let wx,wy = init in
     let best_mx, best_my, best_metric = Pervasives.(ref 0, ref 0, ref M.init) in
     
     (* current block location *)
@@ -288,6 +302,6 @@ module Make(M : Metric) = struct
 
 end
 
-module Search_sad = Make(Sad)
-module Search_sse = Make(Sse)
+module Search_sad = Three_step_search(Sad)
+module Search_sse = Full_search(Sse)
 
