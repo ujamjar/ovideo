@@ -79,6 +79,11 @@ module Full_search(M : Metric) : Estimator
 
 (*module Make(M : Metric) : Search with type t = M.t*)
 
-module Search_sad : Estimator with type t = int
-module Search_sse : Estimator with type t = int
+module Search_sad : Estimator 
+  with type init = int
+   and type t = M.t
+
+module Search_sse : Estimator 
+  with type init = int*int
+   and type t = M.t
 
