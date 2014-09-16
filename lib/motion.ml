@@ -1,7 +1,8 @@
 (* TODO:
-  * other algotihms
-  * abstract over metrics (sad, sse, rdo etc)
- *)
+  * other algortihms; good review of classic algorithms here;
+     http://www.ece.cmu.edu/~ee899/project/deepak_mid.htm
+  * definitely look at hierarchical search, which can work very well.
+*)
 
 type 'a metric_calc = 
   bw:int -> bh:int ->
@@ -301,7 +302,4 @@ module Full_search(M : Metric) = struct
     search
 
 end
-
-module Search_sad = Three_step_search(Sad)
-module Search_sse = Full_search(Sse)
 

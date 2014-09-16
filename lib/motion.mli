@@ -54,36 +54,20 @@ type 'a search =
   cx:int -> cy:int -> 
   sx:int -> sy:int -> 'a search_result
 
-  (*
-module type Search = sig
-  type t 
-  (** three step search *)
-  val threestep : steps:int -> t search
-  (** full search *)
-  val full : window:(int*int) -> t search 
-end *)
-
+(** type of motion estimators *)
 module type Estimator = sig
   type t 
   type init
   val eval : init:init -> t search
 end
 
+(** Three step search *)
 module Three_step_search(M : Metric) : Estimator 
   with type init = int
    and type t = M.t
 
+(** full search *)
 module Full_search(M : Metric) : Estimator
   with type init = int*int
    and type t = M.t
-
-(*module Make(M : Metric) : Search with type t = M.t*)
-
-module Search_sad : Estimator 
-  with type init = int
-   and type t = int
-
-module Search_sse : Estimator 
-  with type init = int*int
-   and type t = int
 

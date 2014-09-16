@@ -5,4 +5,5 @@
 <lib>: include
 <lib_test>: include
 
+true: bin_annot
 true: debug
