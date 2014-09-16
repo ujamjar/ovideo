@@ -9,13 +9,11 @@ lib: [
   "_build/lib/table.cmti"
   "_build/lib/dct.cmti"
   "_build/lib/frame.cmti"
-  "_build/lib/ovideo.cmti"
   "_build/lib/bits.cmt"
   "_build/lib/motion.cmt"
   "_build/lib/table.cmt"
   "_build/lib/frame.cmt"
   "_build/lib/zigzag.cmt"
   "_build/lib/dct.cmt"
-  "_build/lib/ovideo.cmt"
   "META"
 ]
