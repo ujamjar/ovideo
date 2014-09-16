@@ -81,9 +81,9 @@ module Full_search(M : Metric) : Estimator
 
 module Search_sad : Estimator 
   with type init = int
-   and type t = M.t
+   and type t = int
 
 module Search_sse : Estimator 
   with type init = int*int
-   and type t = M.t
+   and type t = int
 
