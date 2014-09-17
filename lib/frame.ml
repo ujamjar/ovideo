@@ -12,7 +12,8 @@ module type Frame = sig
 
     type ot
     type et
-    type t = (ot, et, c_layout) Array2.t
+    type 'a tc = (ot, 'a, c_layout) Array2.t
+    type t = et tc
     type t1d = (ot, et, c_layout) Array1.t
 
     val width : t -> int
@@ -22,15 +23,19 @@ module type Frame = sig
     val init : w:int -> h:int -> (x:int -> y:int -> ot) -> t
     val to_1d : t -> t1d
     val of_1d : t1d -> w:int -> h:int -> t
-    val map : ?alloc:bool -> (ot -> ot) -> t -> t
-    val mapi : ?alloc:bool -> (x:int -> y:int -> ot -> ot) -> t -> t
-    val map2 : (ot -> ot -> ot) -> t -> t -> t
-    val map2i : (x:int -> y:int -> ot -> ot -> ot) -> t -> t -> t
+    val map : (ot -> ot) -> 'a tc -> t
+    val mapi : (x:int -> y:int -> ot -> ot) -> 'a tc -> t
+    val map_na : (ot -> ot) -> t -> t
+    val mapi_na : (x:int -> y:int -> ot -> ot) -> t -> t
+    val map2 : (ot -> ot -> ot) -> 'a tc -> 'a tc -> t
+    val map2i : (x:int -> y:int -> ot -> ot -> ot) -> 'a tc -> 'a tc -> t
+    val map2_na : (ot -> ot -> ot) -> t -> 'a tc -> t
+    val map2i_na : (x:int -> y:int -> ot -> ot -> ot) -> t -> 'a tc -> t
     val iter : (ot -> unit) -> t -> unit
     val iteri : (x:int -> y:int -> ot -> unit) -> t -> unit
     val clear : t -> ot -> unit
-    val blit : x:int -> y:int -> w:int -> h:int -> dx:int -> dy:int -> t -> t -> unit
-    val sub : x:int -> y:int -> w:int -> h:int -> t -> t
+    val blit : x:int -> y:int -> w:int -> h:int -> dx:int -> dy:int -> 'a tc -> t -> unit
+    val sub : x:int -> y:int -> w:int -> h:int -> 'a tc -> t
   end
 
   type chroma = C420 | C422
@@ -59,6 +64,7 @@ module Make(S : S) = struct
     type ot = S.ot
     type et = S.et
     type t = (ot, et, c_layout) Array2.t
+    type 'a tc = (ot, 'a, c_layout) Array2.t
     type t1d = (ot, et, c_layout) Array1.t
 
     let width = Array2.dim2 
@@ -72,8 +78,8 @@ module Make(S : S) = struct
     let of_1d p ~w ~h = 
       reshape_2 (genarray_of_array1 p) h w
  
-    let map ?(alloc=true) f p = 
-      let q = if alloc then make ~w:(width p) ~h:(height p) else p in
+    let map f p = 
+      let q = make ~w:(width p) ~h:(height p) in
       for y=0 to height p - 1 do
         for x=0 to width p - 1 do
           q.{y,x} <- f p.{y,x}
@@ -81,14 +87,30 @@ module Make(S : S) = struct
       done;
       q
 
-    let mapi ?(alloc=true) f p = 
-      let q = if alloc then make ~w:(width p) ~h:(height p) else p in
+    let mapi f p = 
+      let q = make ~w:(width p) ~h:(height p) in
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          q.{y,x} <- f ~x ~y p.{y,x}
+        done
+      done;
+      q
+
+    let map_na f p = 
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          p.{y,x} <- f p.{y,x}
+        done
+      done;
+      p
+
+    let mapi_na f p = 
       for y=0 to height p - 1 do
         for x=0 to width p - 1 do
           p.{y,x} <- f ~x ~y p.{y,x}
         done
       done;
-      q
+      p
 
     let map2 f p q = 
       let r = make ~w:(width p) ~h:(height p) in
@@ -108,6 +130,22 @@ module Make(S : S) = struct
       done;
       r
 
+    let map2_na f p q = 
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          p.{y,x} <- f p.{y,x} q.{y,x}
+        done
+      done;
+      p
+
+    let map2i_na f p q = 
+      for y=0 to height p - 1 do
+        for x=0 to width p - 1 do
+          p.{y,x} <- f ~x ~y p.{y,x} q.{y,x}
+        done
+      done;
+      p
+
     let iter f p = 
       for y=0 to height p - 1 do
         for x=0 to width p - 1 do
@@ -124,7 +162,7 @@ module Make(S : S) = struct
       
     let init ~w ~h f = 
       let p = make ~w ~h in
-      mapi ~alloc:false (fun ~x ~y _ -> f ~x ~y) p
+      mapi (fun ~x ~y _ -> f ~x ~y) p
 
     let clear p v = Array2.fill p v
 

@@ -22,8 +22,10 @@ module type Frame = sig
     type ot
     (* c type of elements *)
     type et
+    (* compatible frame type *)
+    type 'a tc = (ot, 'a, c_layout) Array2.t
     (* plane as 2d array *)
-    type t = (ot, et, c_layout) Array2.t
+    type t = et tc
     (* plane as 1d array *)
     type t1d = (ot, et, c_layout) Array1.t
 
@@ -40,16 +42,28 @@ module type Frame = sig
     val of_1d : t1d -> w:int -> h:int -> t
 
     (** map over elements *)
-    val map : ?alloc:bool -> (ot -> ot) -> t -> t
+    val map : (ot -> ot) -> 'a tc -> t
 
     (** map over elements with index *)
-    val mapi : ?alloc:bool -> (x:int -> y:int -> ot -> ot) -> t -> t
+    val mapi : (x:int -> y:int -> ot -> ot) -> 'a tc -> t
 
     (** map over elements *)
-    val map2 : (ot -> ot -> ot) -> t -> t -> t
+    val map_na : (ot -> ot) -> t -> t
 
     (** map over elements with index *)
-    val map2i : (x:int -> y:int -> ot -> ot -> ot) -> t -> t -> t
+    val mapi_na : (x:int -> y:int -> ot -> ot) -> t -> t
+
+    (** map over elements *)
+    val map2 : (ot -> ot -> ot) -> 'a tc -> 'a tc -> t
+
+    (** map over elements with index *)
+    val map2i : (x:int -> y:int -> ot -> ot -> ot) -> 'a tc -> 'a tc -> t
+
+    (** map over elements *)
+    val map2_na : (ot -> ot -> ot) -> t -> 'a tc -> t
+
+    (** map over elements with index *)
+    val map2i_na : (x:int -> y:int -> ot -> ot -> ot) -> t -> 'a tc -> t
 
     (** iter over elements *)
     val iter : (ot -> unit) -> t -> unit
@@ -61,10 +75,10 @@ module type Frame = sig
     val clear : t -> ot -> unit
 
     (** blit src sub rect to dst *)
-    val blit : x:int -> y:int -> w:int -> h:int -> dx:int -> dy:int -> t -> t -> unit
+    val blit : x:int -> y:int -> w:int -> h:int -> dx:int -> dy:int -> 'a tc -> t -> unit
 
-    (* extract sub plane *)
-    val sub : x:int -> y:int -> w:int -> h:int -> t -> t
+    (* extract sub rectangle *)
+    val sub : x:int -> y:int -> w:int -> h:int -> 'a tc -> t
 
   end
 
