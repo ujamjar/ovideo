@@ -1,5 +1,5 @@
 all:
-	ocamlbuild -use-ocamlfind ovideo.cma ovideo.cmxa
+	ocamlbuild -use-ocamlfind -cflag -unsafe ovideo.cma ovideo.cmxa
 
 test: all
 	ocamlbuild -use-ocamlfind test_bits.byte test_dct.byte test_motion.byte
