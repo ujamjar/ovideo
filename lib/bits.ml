@@ -47,6 +47,8 @@ module Reader( S : Source ) = struct
       source : source;
     }
 
+  exception Out_of_bits
+
   let rec fill_buffer b = 
     if b.bufbits < 32 then 
       match S.next_byte b.source with
@@ -69,8 +71,10 @@ module Reader( S : Source ) = struct
 
   let show b n = 
     fill_buffer b;
-    let v = Int64.(logand (shift_right_logical b.buffer (b.bufbits - n)) masks.(n)) in
-    Int64.to_int v
+    if b.bufbits < n then raise Out_of_bits
+    else 
+      let v = Int64.(logand (shift_right_logical b.buffer (b.bufbits - n)) masks.(n)) in
+      Int64.to_int v
 
   let advance b n = 
     b.bufbits <- b.bufbits - n;
