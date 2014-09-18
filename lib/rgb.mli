@@ -1,3 +1,3 @@
-val rgb2yuv : int -> int -> int -> (int * int * int)
-val yuv2rgb : int -> int -> int -> (int * int * int)
+val to_yuv : int -> int -> int -> (int * int * int)
+val of_yuv : int -> int -> int -> (int * int * int)
 
